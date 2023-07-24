@@ -5,7 +5,6 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from diffusers.utils.import_utils import is_xformers_available
 from diffusers.models.cross_attention import CrossAttention
 from diffusers.utils import BaseOutput
 from diffusers.configuration_utils import ConfigMixin, register_to_config
@@ -22,12 +21,6 @@ class Transformer2DModelOutput(BaseOutput):
 
     sample: torch.FloatTensor
 
-if is_xformers_available():
-    import xformers
-    import xformers.ops
-else:
-    xformers = None
-
 
 class Transformer2DModel(ModelMixin, ConfigMixin):
     @register_to_config
@@ -41,7 +34,6 @@ class Transformer2DModel(ModelMixin, ConfigMixin):
         dropout: float = 0.0,
         norm_num_groups: int = 32,
         cross_attention_dim: Optional[int] = None,
-        cross_frame_attention_dim: Optional[int] = None,
         attention_bias: bool = False,
         activation_fn: str = "geglu",
         num_embeds_ada_norm: Optional[int] = None,
@@ -57,7 +49,6 @@ class Transformer2DModel(ModelMixin, ConfigMixin):
         inner_dim = num_attention_heads * attention_head_dim
 
         # Define input layers
-        
         self.in_channels = in_channels
 
         self.norm = torch.nn.GroupNorm(num_groups=norm_num_groups, num_channels=in_channels, eps=1e-6, affine=True)
@@ -66,7 +57,6 @@ class Transformer2DModel(ModelMixin, ConfigMixin):
         else:
             self.proj_in = nn.Conv2d(in_channels, inner_dim, kernel_size=1, stride=1, padding=0)
         
-
         # Define transformers blocks
         self.transformer_blocks = nn.ModuleList(
             [
@@ -76,7 +66,6 @@ class Transformer2DModel(ModelMixin, ConfigMixin):
                     attention_head_dim,
                     dropout=dropout,
                     cross_attention_dim=cross_attention_dim,
-                    cross_frame_attention_dim=cross_frame_attention_dim,
                     activation_fn=activation_fn,
                     num_embeds_ada_norm=num_embeds_ada_norm,
                     attention_bias=attention_bias,
@@ -272,7 +261,6 @@ class BasicTransformerBlock(nn.Module):
         ff_output = self.ff(norm_hidden_states)
         hidden_states = ff_output + hidden_states
 
-            
         return hidden_states
 
 
@@ -287,7 +275,6 @@ class FeedForward(nn.Module):
         activation_fn (`str`, *optional*, defaults to `"geglu"`): Activation function to be used in feed-forward.
         final_dropout (`bool` *optional*, defaults to False): Apply a final dropout.
     """
-
     def __init__(
         self,
         dim: int,
@@ -329,7 +316,6 @@ class GELU(nn.Module):
     r"""
     GELU activation function with tanh approximation support with `approximate="tanh"`.
     """
-
     def __init__(self, dim_in: int, dim_out: int, approximate: str = "none"):
         super().__init__()
         self.proj = nn.Linear(dim_in, dim_out)

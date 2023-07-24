@@ -20,10 +20,8 @@ logger = logging.get_logger(__name__)
 
 class StableDiffusionPipeline(DiffusionPipeline):
     r"""
-    Pipeline for text-to-video generation using Spatio-Temporal Stable Diffusion.
+    Pipeline for Stable Diffusion.
     """
-    _optional_components = []
-
     def __init__(
         self,
         vae: AutoencoderKL,
@@ -209,7 +207,6 @@ class StableDiffusionPipeline(DiffusionPipeline):
         # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
         # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
         # and should be between [0, 1]
-
         accepts_eta = "eta" in set(inspect.signature(self.scheduler.step).parameters.keys())
         extra_step_kwargs = {}
         if accepts_eta:
@@ -250,11 +247,6 @@ class StableDiffusionPipeline(DiffusionPipeline):
             height // self.vae_scale_factor,
             width // self.vae_scale_factor,
         )
-        if isinstance(generator, list) and len(generator) != batch_size:
-            raise ValueError(
-                f"You have passed a list of generators of length {len(generator)}, but requested an effective batch"
-                f" size of {batch_size}. Make sure the batch size matches the length of the generators."
-            )
 
         if latents is None:
             rand_device = "cpu" if device.type == "mps" else device
@@ -389,16 +381,12 @@ class StableDiffusionPipeline(DiffusionPipeline):
                 # expand the inputs if we are doing classifier free guidance
                 latent_model_input = torch.cat([latents] * 2) if do_classifier_free_guidance else latents
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
-
                 # predict the noise residual
                 noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=text_embeddings).sample.to(dtype=latents.dtype)
-
                 # perform guidance
                 if do_classifier_free_guidance:
                     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (
-                        noise_pred_text - noise_pred_uncond
-                    )
+                    noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
 
                 # compute the previous noisy sample x_t -> x_t-1
                 latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample

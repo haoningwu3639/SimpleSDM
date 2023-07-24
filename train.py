@@ -1,6 +1,5 @@
 import os
 import cv2
-import inspect
 from typing import Optional, Dict
 
 from omegaconf import OmegaConf
@@ -32,45 +31,49 @@ class SampleLogger:
         self,
         logdir: str,
         subdir: str = "sample",
-        num_inference_steps: int = 20,
+        num_samples_per_prompt: int = 2,
+        num_inference_steps: int = 40,
         guidance_scale: float = 7.0,
     ) -> None:
         self.guidance_scale = guidance_scale
         self.num_inference_steps = num_inference_steps
+        self.num_sample_per_prompt = num_samples_per_prompt
         self.logdir = os.path.join(logdir, subdir)
         os.makedirs(self.logdir)
         
     def log_sample_images(
         self, batch, pipeline: StableDiffusionPipeline, device: torch.device, step: int
     ):
-        sample_seeds = torch.randint(0, 100000, (1,))
+        sample_seeds = torch.randint(0, 100000, (self.num_sample_per_prompt,))
         sample_seeds = sorted(sample_seeds.numpy().tolist())
         self.sample_seeds = sample_seeds
         self.prompts = batch["prompt"]
         for idx, prompt in enumerate(tqdm(self.prompts, desc="Generating sample images")):
+            image = batch["image"][idx, :, :, :].unsqueeze(0)
+            image = image.to(device=device)
+            generator = []
             for seed in self.sample_seeds:
-                image = batch["image"][idx, :, :, :].unsqueeze(0)
-                image = image.to(device=device)
-                
-                generator = torch.Generator(device=device)
-                generator.manual_seed(seed)
-                sequence = pipeline(
-                    prompt,
-                    height=image.shape[2],
-                    width=image.shape[3],
-                    generator=generator,
-                    num_inference_steps=self.num_inference_steps,
-                    guidance_scale=self.guidance_scale,
-                    num_images_per_prompt=1,
-                ).images[0]
-            
-                image = (image + 1.) / 2. # for visualization
-                image = image.squeeze().permute(1, 2, 0).detach().cpu().numpy()
-                cv2.imwrite(os.path.join(self.logdir, f"{step}_{idx}_{seed}.png"), image[:, :, ::-1] * 255)
-                sequence[0].save(os.path.join(self.logdir,f"{step}_{idx}_{seed}_output.png"))
-                with open(os.path.join(self.logdir, f"{step}_{idx}_{seed}" + '.txt'), 'a') as f:
-                    f.write(batch['prompt'][idx])
+                generator_temp = torch.Generator(device=device)
+                generator_temp.manual_seed(seed)
+                generator.append(generator_temp)    
+            sequence = pipeline(
+                prompt,
+                height=image.shape[2],
+                width=image.shape[3],
+                generator=generator,
+                num_inference_steps=self.num_inference_steps,
+                guidance_scale=self.guidance_scale,
+                num_images_per_prompt=self.num_sample_per_prompt,
+            ).images
 
+            image = (image + 1.) / 2. # for visualization
+            image = image.squeeze().permute(1, 2, 0).detach().cpu().numpy()
+            cv2.imwrite(os.path.join(self.logdir, f"{step}_{idx}_{seed}.png"), image[:, :, ::-1] * 255)
+            with open(os.path.join(self.logdir, f"{step}_{idx}_{seed}" + '.txt'), 'a') as f:
+                f.write(batch['prompt'][idx])
+            for i, img in enumerate(sequence):
+                img[0].save(os.path.join(self.logdir, f"{idx}_{sample_seeds[i]}_output.png"))
+            
 def train(
     pretrained_model_path: str,
     logdir: str,
@@ -110,7 +113,6 @@ def train(
     if seed is not None:
         set_seed(seed)
 
-    # Load the tokenizer
     tokenizer = AutoTokenizer.from_pretrained(pretrained_model_path, subfolder="tokenizer", use_fast=False)
     text_encoder = CLIPTextModel.from_pretrained(pretrained_model_path, subfolder="text_encoder")
     vae = AutoencoderKL.from_pretrained(pretrained_model_path, subfolder="vae")
@@ -263,7 +265,6 @@ def train(
         if accelerator.sync_gradients:
             progress_bar.update(1)
             step += 1
-
             if accelerator.is_main_process:
                 if validation_sample_logger is not None and step % validation_steps == 0:
                     unet.eval()

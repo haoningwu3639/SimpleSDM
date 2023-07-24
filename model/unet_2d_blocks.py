@@ -3,8 +3,7 @@ from torch import nn
 
 from diffusers.models.attention import AttentionBlock
 from diffusers.models.resnet import Downsample2D, ResnetBlock2D, Upsample2D
-from diffusers.models.transformer_2d import Transformer2DModel
-# from model.attention import Transformer2DModel
+from model.attention import Transformer2DModel
 
 def get_down_block(
     down_block_type,
@@ -60,7 +59,6 @@ def get_down_block(
             resnet_time_scale_shift=resnet_time_scale_shift,
         )
     raise ValueError(f"{down_block_type} does not exist.")
-
 
 def get_up_block(
     up_block_type,
@@ -220,7 +218,6 @@ class UNetMidBlock2DCrossAttn(nn.Module):
         self.attn_num_head_channels = attn_num_head_channels
         resnet_groups = resnet_groups if resnet_groups is not None else min(in_channels // 4, 32)
 
-        # there is always at least one resnet
         resnets = [
             ResnetBlock2D(
                 in_channels=in_channels,
@@ -270,7 +267,7 @@ class UNetMidBlock2DCrossAttn(nn.Module):
         self.resnets = nn.ModuleList(resnets)
 
     def forward(
-        self, hidden_states, temb=None, encoder_hidden_states=None, attention_mask=None, cross_attention_kwargs=None
+        self, hidden_states, temb=None, encoder_hidden_states=None, cross_attention_kwargs=None
     ):
         hidden_states = self.resnets[0](hidden_states, temb)
         for attn, resnet in zip(self.attentions, self.resnets[1:]):
@@ -359,9 +356,8 @@ class CrossAttnDownBlock2D(nn.Module):
         self.gradient_checkpointing = False
 
     def forward(
-        self, hidden_states, temb=None, encoder_hidden_states=None, attention_mask=None, cross_attention_kwargs=None
+        self, hidden_states, temb=None, encoder_hidden_states=None, cross_attention_kwargs=None
     ):
-        # TODO(Patrick, William) - attention mask is not used
         output_states = ()
 
         for resnet, attn in zip(self.resnets, self.attentions):
@@ -559,9 +555,7 @@ class CrossAttnUpBlock2D(nn.Module):
         encoder_hidden_states=None,
         cross_attention_kwargs=None,
         upsample_size=None,
-        attention_mask=None,
     ):
-        # TODO(Patrick, William) - attention mask is not used
         for resnet, attn in zip(self.resnets, self.attentions):
             # pop res hidden states
             res_hidden_states = res_hidden_states_tuple[-1]

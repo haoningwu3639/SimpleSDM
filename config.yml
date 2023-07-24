@@ -1,9 +1,9 @@
-pretrained_model_path: "./ckpt/stable-diffusion-v1-5"
-
+pretrained_model_path: "./ckpt/stable-diffusion-v1-5/"
 logdir: "./runs"
 validation_sample_logger:
     num_inference_steps: 40
     guidance_scale: 7
+gradient_accumulation_steps: 1
 train_steps: 2000
 validation_steps: 100
 checkpointing_steps: 500
