@@ -84,7 +84,6 @@ class Transformer2DModel(ModelMixin, ConfigMixin):
     def forward(
         self,
         hidden_states,
-        image_hidden_states=None,
         encoder_hidden_states=None,
         timestep=None,
         cross_attention_kwargs=None,
@@ -105,7 +104,6 @@ class Transformer2DModel(ModelMixin, ConfigMixin):
         for block in self.transformer_blocks:
             hidden_states = block(
                 hidden_states,
-                image_hidden_states=image_hidden_states,
                 encoder_hidden_states=encoder_hidden_states,
                 timestep=timestep,
                 cross_attention_kwargs=cross_attention_kwargs,
@@ -217,7 +215,6 @@ class BasicTransformerBlock(nn.Module):
     def forward(
         self,
         hidden_states,
-        image_hidden_states=None,
         encoder_hidden_states=None,
         timestep=None,
         attention_mask=None,
