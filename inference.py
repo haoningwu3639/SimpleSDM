@@ -40,7 +40,7 @@ def test(
     guidance_scale: float = 7.0,
     mixed_precision: Optional[str] = "no"   # "fp16"
 ):
-    
+    ddim_prompt = '' # To guarantee full reconstruction. Leave it a null propmpt here.
     if not os.path.exists(logdir):
         os.mkdir(logdir)
     accelerator = Accelerator(mixed_precision=mixed_precision)
@@ -125,9 +125,15 @@ def test(
     latents = latents * 0.18215
     
     # DDIM inversion
-    noisy_latents = ddim_inversion(pipeline, ddim_inv_scheduler, video_latent=latents, guidance_scale=guidance_scale, num_inv_steps=num_inference_steps, prompt=prompt)[-1].to(weight_dtype)
+    noisy_latents = ddim_inversion(pipeline, 
+                                ddim_inv_scheduler, 
+                                video_latent=latents, 
+                                guidance_scale=guidance_scale, 
+                                num_inv_steps=num_inference_steps, 
+                                prompt=ddim_prompt)[-1].to(weight_dtype)
     output = pipeline(
-        prompt = prompt,
+        # prompt = prompt,
+        prompt = ddim_prompt,
         height = 512,
         width = 512,
         num_inference_steps = num_inference_steps,
@@ -147,7 +153,6 @@ def test(
     noise = noise.squeeze(0).detach().cpu().float().numpy()
     noise = transforms.ToPILImage()((noise * 255).astype(np.uint8))
     noise.save(os.path.join(logdir, "DDIM_noise.png"))
-
 
 
 if __name__ == "__main__":
