@@ -143,7 +143,7 @@ def train(
     text_encoder.requires_grad_(False)
     unet.requires_grad_(False)
 
-    trainable_modules = ("attn1",)
+    trainable_modules = ("attn1", "attn2")
     for name, module in unet.named_modules():
         if name.endswith(trainable_modules):
             for params in module.parameters():
