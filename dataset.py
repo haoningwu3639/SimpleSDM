@@ -19,7 +19,7 @@ class SimpleDataset(Dataset):
     def __getitem__(self, index):
         image = self.image_list[index]
         text = image.split('/')[-1]
-        prompt = text.replace('_', ' ')
+        prompt = text.replace('_', ' ')[:-4]
         image =  Image.open(image).convert('RGB')
         image = image.resize((512, 512))
         image = transforms.ToTensor()(image)
