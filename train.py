@@ -72,7 +72,7 @@ class SampleLogger:
             with open(os.path.join(self.logdir, f"{step}_{idx}_{seed}" + '.txt'), 'a') as f:
                 f.write(batch['prompt'][idx])
             for i, img in enumerate(sequence):
-                img[0].save(os.path.join(self.logdir, f"{idx}_{sample_seeds[i]}_output.png"))
+                img[0].save(os.path.join(self.logdir, f"{step}_{idx}_{sample_seeds[i]}_output.png"))
             
 def train(
     pretrained_model_path: str,
