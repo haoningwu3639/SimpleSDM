@@ -9,7 +9,7 @@ from diffusers.utils import BaseOutput, logging
 
 from diffusers.models.embeddings import GaussianFourierProjection, TimestepEmbedding, Timesteps
 from diffusers.models.modeling_utils import ModelMixin
-from .unet_2d_blocks import (
+from model.unet_2d_blocks import (
     CrossAttnDownBlock2D,
     CrossAttnUpBlock2D,
     DownBlock2D,

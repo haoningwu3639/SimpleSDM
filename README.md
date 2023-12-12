@@ -1,6 +1,10 @@
 # SimpleSDM
 This repository contains a simple and flexible PyTorch implementation of StableDiffusion based on diffusers.
 
+<div align="center">
+   <img src="example/example.png">
+</div>
+
 ## Prepartion
 - You should download the checkpoints of SDM-1.5, from [SDM-1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5/tree/main), including scheduler, text_encoder, tokenizer, unet, and vae. Then put it in the ckpt folder.
 

@@ -1,5 +1,6 @@
 import os
 import random
+import argparse
 from typing import Optional
 from torchvision import transforms
 
@@ -12,14 +13,13 @@ from accelerate import Accelerator
 from accelerate.logging import get_logger
 from diffusers import AutoencoderKL, DDIMScheduler
 from diffusers.utils.import_utils import is_xformers_available
-from tqdm.auto import tqdm
 from transformers import AutoTokenizer, CLIPTextModel
 
 from utils.util import ddim_inversion
 from model.unet_2d_condition import UNet2DConditionModel
 from model.pipeline import StableDiffusionPipeline
 from einops import rearrange
-import argparse
+
 
 logger = get_logger(__name__)
 

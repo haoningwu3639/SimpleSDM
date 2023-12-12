@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 def get_time_string() -> str:
     x = datetime.datetime.now()
+    
     return f"{(x.year - 2000):02d}{x.month:02d}{x.day:02d}-{x.hour:02d}{x.minute:02d}{x.second:02d}"
 
 def get_function_args() -> Dict:
@@ -74,6 +75,6 @@ def ddim_loop(pipeline, ddim_scheduler, latent, guidance_scale, num_inv_steps, p
     return all_latent
 
 @torch.no_grad()
-def ddim_inversion(pipeline, ddim_scheduler, video_latent, guidance_scale, num_inv_steps, prompt=""):
-    ddim_latents = ddim_loop(pipeline, ddim_scheduler, video_latent, guidance_scale, num_inv_steps, prompt)
+def ddim_inversion(pipeline, ddim_scheduler, latent, guidance_scale, num_inv_steps, prompt=""):
+    ddim_latents = ddim_loop(pipeline, ddim_scheduler, latent, guidance_scale, num_inv_steps, prompt)
     return ddim_latents
