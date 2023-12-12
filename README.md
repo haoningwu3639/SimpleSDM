@@ -39,5 +39,3 @@ CUDA_VISIBLE_DEVICES=0 python inference.py --prompt "A cat is running in the rai
 
 ## Acknowledgements
 Many thanks to the code bases from [diffusers](https://github.com/huggingface/diffusers).
-
-Ongoing update...
