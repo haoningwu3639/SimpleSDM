@@ -127,7 +127,7 @@ def test(
     # DDIM inversion
     noisy_latents = ddim_inversion(pipeline, 
                                 ddim_inv_scheduler, 
-                                video_latent=latents, 
+                                latent=latents, 
                                 guidance_scale=guidance_scale, 
                                 num_inv_steps=num_inference_steps, 
                                 prompt=ddim_prompt)[-1].to(weight_dtype)
