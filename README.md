@@ -6,7 +6,7 @@ This repository contains a simple and flexible PyTorch implementation of StableD
 </div>
 
 ## Prepartion
-- You should download the checkpoints of SDM-1.5, from [SDM-1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5/tree/main), including scheduler, text_encoder, tokenizer, unet, and vae. Then put it in the ckpt folder.
+- You should download the checkpoints of SDM-1.5, from [SDM-1.5](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5), including scheduler, text_encoder, tokenizer, unet, and vae. Then put it in the ckpt folder.
 
 ## Requirements
 - Python >= 3.8 (Recommend to use [Anaconda](https://www.anaconda.com/download/#linux) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html))
